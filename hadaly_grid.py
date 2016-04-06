@@ -1,4 +1,3 @@
-from sklearn.datasets import load_iris
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import  Pipeline
