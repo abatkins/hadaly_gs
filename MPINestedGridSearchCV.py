@@ -395,7 +395,7 @@ class NestedGridSearchCV(BaseEstimator):
 """
 BSD 3-Clause License
 
-Copyright (c) 2015 Sebastian Pölsterl.
+Copyright (c) 2015 Sebastian Polsterl.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
