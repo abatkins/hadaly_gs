@@ -22,7 +22,7 @@ def main():
 
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     rbm = BernoulliRBM(batch_size=10, learning_rate=0.1, n_components=3, n_iter=10, random_state=0, verbose=True)
-    svc = LinearSVC(C=1000, class_weight="balanced")
+    svc = LinearSVC(C=1000, class_weight="auto")
     pipe = Pipeline(steps=[('rbm', rbm), ('svc', svc)])
 
     model_to_set = OneVsRestClassifier(pipe, n_jobs=1)
