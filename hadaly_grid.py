@@ -10,6 +10,7 @@ from get_variables import VariablesXandY
 import logging
 from sklearn.externals import joblib
 import os.path
+from scipy.sparse import csr_matrix
 
 
 def main(arg):
@@ -51,12 +52,15 @@ def main(arg):
     print("x-shape: ", x_train.shape)
     print("y-shape: ", y_train.shape)
     print("x_train_size: ", x_train_size)
-    
-    print("xarray-shape: ", x_train.toarray().shape)
-    print("yarray-shape: ", y_train.toarray().shape)
+
+    full_xtrain = csr_matrix(x_train)
+    full_xtrain_size = full_xtrain.data.nbytes
+    print("full_x_train_size", full_xtrain_size)
+    print("xarray-shape: ", full_xtrain.shape)
+    print("yarray-shape: ", full_xtrain.shape)
 
 
-    model_tunning.fit(x_train.toarray(), y_train.toarray())
+    model_tunning.fit(full_xtrain, y_train.todense())
     output_path = os.path.join(base_dir,'output/output.pkl')
     joblib.dump(model_tunning, output_path)
 
