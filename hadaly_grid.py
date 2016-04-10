@@ -12,16 +12,18 @@ from sklearn.externals import joblib
 from os import path, remove
 
 def main(arg):
+    LOG_FILENAME = 'logs/gridsearch.log'
+
+    if path.isfile(LOG_FILENAME):
+        remove(LOG_FILENAME)
+    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+
     if arg == "--prod":
         logging.info("Env: production")
         base_dir = "../scr00"
     else:
         logging.info("Env: development")
         base_dir = ""
-    LOG_FILENAME = 'logs/gridsearch.log'
-    if path.isfile(LOG_FILENAME):
-        remove(LOG_FILENAME)
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
     train_file = 'test.csv'
     label_file = path.join(base_dir,'output/labels.pkl')
