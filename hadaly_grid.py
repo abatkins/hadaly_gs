@@ -9,14 +9,17 @@ from sklearn.metrics import make_scorer
 from get_variables import VariablesXandY
 import logging
 from sklearn.externals import joblib
+import os.path
 
 
 def main():
+    #base_dir = "../scr00"
+    base_dir = ""
     LOG_FILENAME = 'logs/gridsearch.log'
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
     train_file = 'test.csv'
-    label_file = '../scr00/output/labels.pkl'
+    label_file = os.path.join(base_dir,'output/labels.pkl')
     variables_object = VariablesXandY(input_filename=train_file)
     y_train = variables_object.get_y_matrix(labels_pickle_filename=label_file)
     n_gram = (1,2)
@@ -43,9 +46,8 @@ def main():
     model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
     print(model_tunning)
 
-    #model_tunning.fit(x_train.toarray(), y_train.toarray())
-    model_tunning.fit(x_train, y_train)
-    output_path = '../scr00/output/output.pkl'
+    model_tunning.fit(x_train.toarray(), y_train.toarray())
+    output_path = os.path.join(base_dir,'output/output.pkl')
     joblib.dump(model_tunning, output_path)
 
     logging.info("best score: " + str(model_tunning.best_score_))
