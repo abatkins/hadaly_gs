@@ -9,7 +9,7 @@ from sklearn.metrics import make_scorer
 from get_variables import VariablesXandY
 import logging
 from sklearn.externals import joblib
-import os.path
+from os import path, remove
 
 def main(arg):
     if arg == "--prod":
@@ -19,10 +19,11 @@ def main(arg):
         logging.info("Env: development")
         base_dir = ""
     LOG_FILENAME = 'logs/gridsearch.log'
+    remove(LOG_FILENAME)
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
     train_file = 'test.csv'
-    label_file = os.path.join(base_dir,'output/labels.pkl')
+    label_file = path.join(base_dir,'output/labels.pkl')
     variables_object = VariablesXandY(input_filename=train_file)
     y_train = variables_object.get_y_matrix(labels_pickle_filename=label_file).todense()
     n_gram = (1,2)
