@@ -10,8 +10,6 @@ from get_variables import VariablesXandY
 import logging
 from sklearn.externals import joblib
 import os.path
-from scipy.sparse import csr_matrix
-
 
 def main(arg):
     if arg == "prod":
@@ -24,7 +22,7 @@ def main(arg):
     train_file = 'test.csv'
     label_file = os.path.join(base_dir,'output/labels.pkl')
     variables_object = VariablesXandY(input_filename=train_file)
-    y_train = variables_object.get_y_matrix(labels_pickle_filename=label_file)
+    y_train = variables_object.get_y_matrix(labels_pickle_filename=label_file).todense()
     n_gram = (1,2)
     x_train = variables_object.get_x_matrix(n_gram)
 
@@ -44,23 +42,10 @@ def main(arg):
 
     f1_scorer = make_scorer(f1_score, average='samples')
 
-    #model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_score, multi_output=True)
-    #model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
-    model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
-    print(model_tunning)
-    x_train_size = x_train.data.nbytes + x_train.indptr.nbytes + x_train.indices.nbytes
-    print("x-shape: ", x_train.shape)
-    print("y-shape: ", y_train.shape)
-    print("x_train_size: ", x_train_size)
+    model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
+    #model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
+    model_tunning.fit(x_train, y_train)
 
-    full_xtrain = csr_matrix(x_train)
-    full_xtrain_size = full_xtrain.data.nbytes
-    print("full_x_train_size", full_xtrain_size)
-    print("xarray-shape: ", full_xtrain.shape)
-    print("yarray-shape: ", full_xtrain.shape)
-
-
-    model_tunning.fit(full_xtrain, y_train.todense())
     output_path = os.path.join(base_dir,'output/output.pkl')
     joblib.dump(model_tunning, output_path)
 
