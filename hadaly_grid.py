@@ -46,6 +46,11 @@ def main():
     model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
     print(model_tunning)
 
+    print("x-shape: ", x_train.shape)
+    print("y-shape: ", y_train.shape)
+    print("xarray-shape: ", x_train.toarray().shape)
+    print("yarray-shape: ", y_train.toarray().shape)
+
     model_tunning.fit(x_train.toarray(), y_train.toarray())
     output_path = os.path.join(base_dir,'output/output.pkl')
     joblib.dump(model_tunning, output_path)
