@@ -19,7 +19,8 @@ def main(arg):
         logging.info("Env: development")
         base_dir = ""
     LOG_FILENAME = 'logs/gridsearch.log'
-    remove(LOG_FILENAME)
+    if path.isfile(LOG_FILENAME):
+        remove(LOG_FILENAME)
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
     train_file = 'test.csv'
