@@ -13,8 +13,8 @@ import os.path
 
 
 def main():
-    #base_dir = "../scr00"
-    base_dir = ""
+    base_dir = "../scr00"
+    #base_dir = ""
     LOG_FILENAME = 'logs/gridsearch.log'
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
