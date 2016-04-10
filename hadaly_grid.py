@@ -12,9 +12,11 @@ from sklearn.externals import joblib
 import os.path
 
 def main(arg):
-    if arg == "prod":
+    if arg == "--prod":
+        logging.info("Env: production")
         base_dir = "../scr00"
     else:
+        logging.info("Env: development")
         base_dir = ""
     LOG_FILENAME = 'logs/gridsearch.log'
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
@@ -26,7 +28,6 @@ def main(arg):
     n_gram = (1,2)
     x_train = variables_object.get_x_matrix(n_gram)
 
-    #rbm = BernoulliRBM(random_state=0, verbose=True)
     rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(C=1000, class_weight="auto")
     pipe = Pipeline(steps=[('rbm', rbm), ('svc', svc)])
@@ -63,5 +64,5 @@ if __name__ == "__main__":
     if len(sys.argv) < 1:
         arg = sys.argv[1]
     else:
-        arg = "dev"
+        arg = "--dev"
     main(arg)
