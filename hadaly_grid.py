@@ -47,11 +47,14 @@ def main(arg):
     #model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
     model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
     print(model_tunning)
-
+    x_train_size = x_train.data.nbytes + x_train.indptr.nbytes + x_train.indices.nbytes
     print("x-shape: ", x_train.shape)
     print("y-shape: ", y_train.shape)
+    print("x_train_size: ", x_train_size)
+    
     print("xarray-shape: ", x_train.toarray().shape)
     print("yarray-shape: ", y_train.toarray().shape)
+
 
     model_tunning.fit(x_train.toarray(), y_train.toarray())
     output_path = os.path.join(base_dir,'output/output.pkl')
