@@ -39,11 +39,12 @@ def main():
     f1_scorer = make_scorer(f1_score, average='samples')
 
     #model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_score, multi_output=True)
-    model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
-    #model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
+    #model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
+    model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
     print(model_tunning)
 
-    model_tunning.fit(x_train.toarray(), y_train.toarray())
+    #model_tunning.fit(x_train.toarray(), y_train.toarray())
+    model_tunning.fit(x_train, y_train)
     output_path = '../scr00/output/output.pkl'
     joblib.dump(model_tunning, output_path)
 
