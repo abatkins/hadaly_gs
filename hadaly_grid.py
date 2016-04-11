@@ -49,9 +49,13 @@ def main(arg):
 
     model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
     #model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
+
+    logging.info("Fitting model...")
     model_tunning.fit(x_train, y_train)
 
-    output_path = os.path.join(base_dir,'output/output.pkl')
+    output_path = path.join(base_dir,'output/output.pkl')
+
+    logging.info("Dumping model...")
     joblib.dump(model_tunning, output_path)
 
     logging.info("best score: " + str(model_tunning.best_score_))
