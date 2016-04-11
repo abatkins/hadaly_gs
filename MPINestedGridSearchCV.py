@@ -371,14 +371,13 @@ class NestedGridSearchCV(BaseEstimator):
         slave.run()
 
     def fit(self, X, y):
-        print("comm_size:" + str(comm_size))
+        logging.info("comm_size:" + str(comm_size))
         X, y = check_X_y(X, y, force_all_finite=False, multi_output=self.multi_output, accept_sparse='csr')
         _check_param_grid(self.param_grid)
 
         cv = check_cv(self.cv, X, y, classifier=is_classifier(self.estimator))
-        print("cv length:" + str(len(cv)))
-        print("comm_size:" + str(comm_size))
-		
+        logging.info("cv length:" + str(len(cv)))
+
         self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
 
         if comm_rank == 0:
