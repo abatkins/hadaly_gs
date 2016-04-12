@@ -12,12 +12,12 @@ from sklearn.externals import joblib
 from os import path, remove
 
 def main(arg):
-    LOG_FILENAME = 'logs/gridsearch.log'
 
+    LOG_FILENAME = 'logs/gridsearch.log'
     if path.isfile(LOG_FILENAME):
         remove(LOG_FILENAME)
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
+    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
     if arg == "--prod":
         logging.info("Env: production")
         base_dir = "../scr00"
@@ -38,13 +38,15 @@ def main(arg):
 
     model_to_set = OneVsRestClassifier(pipe, n_jobs=1)
 
+    # k folds, p paramaters, n options
+    # number of model fits is equal to k*n^p
+    # Ex: 3*2^4 = 48 for this case
     parameters = {
         "estimator__rbm__batch_size": [5,10], #[5,10]
         "estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         "estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         "estimator__rbm__n_components": [3,5]#[1,5,10,20,100,256]
     }
-
     f1_scorer = make_scorer(f1_score, average='samples')
 
     model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
