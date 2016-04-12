@@ -45,7 +45,7 @@ def main(prod,nested):
         "estimator__rbm__batch_size": [5,10], #[5,10]
         "estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         "estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
-        "estimator__rbm__n_components": [3,5]#[1,5,10,20,100,256]
+        "estimator__rbm__n_components": [3,5]#[1,5,10,20,100,256],
         "estimator__svc__C": [1000]
     }
 
