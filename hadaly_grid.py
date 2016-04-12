@@ -11,14 +11,14 @@ import logging
 from sklearn.externals import joblib
 from os import path, remove
 
-def main(arg):
+def main(prod,nested):
     LOG_FILENAME = 'logs/gridsearch.log'
 
     if path.isfile(LOG_FILENAME):
         remove(LOG_FILENAME)
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
-    if arg == "--prod":
+    if prod:
         logging.info("Env: production")
         base_dir = "../scr00"
     else:
@@ -33,8 +33,11 @@ def main(arg):
     x_train = variables_object.get_x_matrix(n_gram)
 
     rbm = BernoulliRBM(random_state=0, verbose=True)
-    svc = LinearSVC(C=1000, class_weight="auto")
-    pipe = Pipeline(steps=[('rbm', rbm), ('svc', svc)])
+    svc = LinearSVC(class_weight="auto")
+    pipe = Pipeline(steps=[
+        #('rbm', rbm),
+        ('svc', svc)
+    ])
 
     model_to_set = OneVsRestClassifier(pipe, n_jobs=1)
 
@@ -43,12 +46,15 @@ def main(arg):
         "estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         "estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         "estimator__rbm__n_components": [3,5]#[1,5,10,20,100,256]
+        "estimator__svc__C": [1000]
     }
 
     f1_scorer = make_scorer(f1_score, average='samples')
 
-    model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
-    #model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
+    if nested:
+        model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
+    else:
+        model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
 
     logging.info("Fitting model...")
     model_tunning.fit(x_train, y_train)
@@ -69,8 +75,11 @@ def main(arg):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 1:
-        arg = sys.argv[1]
-    else:
-        arg = "--dev"
-    main(arg)
+    prod, nested = (False,False)
+    args = sys.argv[1:]
+    for i in range(len(args)):
+        if args[i] == "--prod":
+            prod = True
+        if args[i] == "--nested":
+            nested = True
+    main(prod, nested)
