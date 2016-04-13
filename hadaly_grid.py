@@ -11,7 +11,7 @@ import logging
 from sklearn.externals import joblib
 from os import path, remove
 
-def main(arg):
+def main(prod, nested):
     LOG_FILENAME = 'logs/gridsearch.log'
     if path.isfile(LOG_FILENAME):
         remove(LOG_FILENAME)
