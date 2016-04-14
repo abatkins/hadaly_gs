@@ -35,7 +35,7 @@ def main(prod, nested):
     rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
     pipe = Pipeline(steps=[
-        ('rbm', rbm),
+        #('rbm', rbm),
         ('svc', svc)
     ])
 
@@ -45,10 +45,11 @@ def main(prod, nested):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        "estimator__rbm__batch_size": [5,10], #[5,10]
-        "estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
-        "estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
-        "estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
+        #"estimator__rbm__batch_size": [5,10], #[5,10]
+        #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
+        #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
+        #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
+        #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         "estimator__svc__C": [1000]
     }
     f1_scorer = make_scorer(f1_score, average='samples')
@@ -75,6 +76,8 @@ def main(prod, nested):
 
     print(model_tunning.best_score_)
     print(model_tunning.best_params_)
+
+    logging.info("Done!")
 
 if __name__ == "__main__":
     import sys
