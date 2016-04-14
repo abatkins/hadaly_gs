@@ -7,6 +7,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score
 from sklearn.metrics import make_scorer
 from get_variables import VariablesXandY
+from sklearn.cross_validation import ShuffleSplit
 import logging
 from sklearn.externals import joblib
 from os import path, remove
@@ -16,7 +17,7 @@ def main(prod, nested):
     if path.isfile(LOG_FILENAME):
         remove(LOG_FILENAME)
 
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG, format='%(asctime)s %(message)s')
     if prod:
         logging.info("Env: production")
         base_dir = "../scr00"
@@ -32,7 +33,7 @@ def main(prod, nested):
     x_train = variables_object.get_x_matrix(n_gram)
 
     rbm = BernoulliRBM(random_state=0, verbose=True)
-    svc = LinearSVC(class_weight="auto")
+    svc = LinearSVC(class_weight="balanced")
     pipe = Pipeline(steps=[
         ('rbm', rbm),
         ('svc', svc)
@@ -52,10 +53,11 @@ def main(prod, nested):
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
+    custom_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.01, random_state=0)
     if nested:
-        model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, multi_output=True)
+        model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv, multi_output=True)
     else:
-        model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer)
+        model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv)
 
     logging.info("Fitting model...")
     model_tunning.fit(x_train, y_train)
