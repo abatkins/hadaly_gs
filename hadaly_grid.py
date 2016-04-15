@@ -80,12 +80,17 @@ def main(prod, nested):
     logging.info("Done!")
 
 if __name__ == "__main__":
-    import sys
-    prod, nested = (False,False)
-    args = sys.argv[1:]
-    for i in range(len(args)):
-        if args[i] == "--prod":
-            prod = True
-        if args[i] == "--nested":
-            nested = True
-    main(prod, nested)
+    from mpi4py import MPI
+    comm = MPI.COMM_WORLD
+    comm_rank = comm.Get_rank()
+
+    if comm_rank == 0:
+        import sys
+        prod, nested = (False,False)
+        args = sys.argv[1:]
+        for i in range(len(args)):
+            if args[i] == "--prod":
+                prod = True
+            if args[i] == "--nested":
+                nested = True
+        main(prod, nested)
