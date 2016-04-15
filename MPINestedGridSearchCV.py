@@ -150,8 +150,10 @@ class MPISlave(MPIBatchWorker):
                 LOG.debug("Node %d received terminate message", comm_rank)
                 return
             if task_desc[1] == MPI_MSG_CV:
+                LOG.debug("Slave run gridsearch")
                 self._run_grid_search()
             elif task_desc[1] == MPI_MSG_TEST:
+                LOG.debug("Slave running train_test")
                 self._run_train_test()
                 break
             else:
@@ -210,7 +212,6 @@ class MPIGridSearchCVMaster(MPIBatchWorker):
     def run(self, train_X, train_y):
         # tell slave that it should do hyper-parameter search
 
-        logging.debug("Slave is running")
         self._task_desc[0] = 0
         self._task_desc[1] = MPI_MSG_CV
 
@@ -220,9 +221,10 @@ class MPIGridSearchCVMaster(MPIBatchWorker):
         self._data_X = train_X
         self._data_y = train_y
 
-        logging.debug("Slave is scattering work")
+        LOG.debug("Scattering work")
         root_result_batch = self._scatter_work()
-        logging.debug("Slave is gathering work")
+
+        LOG.debug("Gathering work")
         return self._gather_work(root_result_batch)
 
 
@@ -372,6 +374,7 @@ class NestedGridSearchCV(BaseEstimator):
 
     def _fit_slave(self):
         slave = MPISlave(self.estimator, self.scorer_, self.fit_params)
+        LOG.debug("Slave is running")
         slave.run()
 
     def fit(self, X, y):
@@ -386,9 +389,11 @@ class NestedGridSearchCV(BaseEstimator):
 
         if comm_rank == 0:
             self._fit_master(X, y, cv)
+            LOG.debug("Master fitted")
         else:
             logging.debug("Fitting slave: ", comm_rank)
             self._fit_slave()
+            LOG.debug("Slave finished")
 
         return self
 
