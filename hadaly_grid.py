@@ -11,10 +11,13 @@ from sklearn.cross_validation import ShuffleSplit
 import logging
 from sklearn.externals import joblib
 from os import path, remove
+from mpi4py import MPI
 
 def main(prod, nested):
+    rank = MPI.COMM_WORLD.Get_rank()
     LOG_FILENAME = 'logs/gridsearch.log'
-    if path.isfile(LOG_FILENAME):
+
+    if rank == 0 and path.isfile(LOG_FILENAME):
         remove(LOG_FILENAME)
 
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG, format='%(asctime)s %(message)s')
@@ -63,34 +66,35 @@ def main(prod, nested):
     logging.info("Fitting model...")
     model_tunning.fit(x_train, y_train)
 
-    output_path = path.join(base_dir,'output/output.pkl')
+    #output_path = path.join(base_dir,'output/output.pkl')
 
-    logging.info("Dumping model...")
-    joblib.dump(model_tunning, output_path)
+    #logging.info("Dumping model...")
+    #joblib.dump(model_tunning, output_path)
 
-    logging.info("best score: " + str(model_tunning.best_score_))
-    logging.info("best params: " + str(model_tunning.best_params_))
 
-    logging.info("best estimator: " + str(model_tunning.best_estimator_))
-    logging.info("grid scores: " + str(model_tunning.grid_scores_))
 
-    print(model_tunning.best_score_)
-    print(model_tunning.best_params_)
+    if rank == 0:
+        for i, scores in enumerate(model_tunning.grid_scores_):
+            csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))
+            scores.to_csv(csv_file, index=False)
 
-    logging.info("Done!")
+        print(model_tunning.best_score_)
+        print(model_tunning.best_params_)
+
+        logging.info("best score: " + str(model_tunning.best_score_))
+        logging.info("best params: " + str(model_tunning.best_params_))
+        logging.info("best estimator: " + str(model_tunning.best_estimator_))
+
+        logging.info("Done!")
 
 if __name__ == "__main__":
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    comm_rank = comm.Get_rank()
 
-    if comm_rank == 0:
-        import sys
-        prod, nested = (False,False)
-        args = sys.argv[1:]
-        for i in range(len(args)):
-            if args[i] == "--prod":
-                prod = True
-            if args[i] == "--nested":
-                nested = True
-        main(prod, nested)
+    import sys
+    prod, nested = (False,False)
+    args = sys.argv[1:]
+    for i in range(len(args)):
+        if args[i] == "--prod":
+            prod = True
+        if args[i] == "--nested":
+            nested = True
+    main(prod, nested)

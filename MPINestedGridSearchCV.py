@@ -191,6 +191,7 @@ class MPIGridSearchCVMaster(MPIBatchWorker):
 
         # Distribute batches across all nodes
         root_work_batch = comm.scatter(work_batches, root=0)
+
         # The root node also does receive one batch it has to process
         root_result_batch = self.process_batch(root_work_batch)
         return root_result_batch
