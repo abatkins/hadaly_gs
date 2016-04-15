@@ -209,6 +209,8 @@ class MPIGridSearchCVMaster(MPIBatchWorker):
 
     def run(self, train_X, train_y):
         # tell slave that it should do hyper-parameter search
+
+        logging.debug("Slave is running")
         self._task_desc[0] = 0
         self._task_desc[1] = MPI_MSG_CV
 
@@ -218,7 +220,9 @@ class MPIGridSearchCVMaster(MPIBatchWorker):
         self._data_X = train_X
         self._data_y = train_y
 
+        logging.debug("Slave is scattering work")
         root_result_batch = self._scatter_work()
+        logging.debug("Slave is gathering work")
         return self._gather_work(root_result_batch)
 
 
@@ -383,6 +387,7 @@ class NestedGridSearchCV(BaseEstimator):
         if comm_rank == 0:
             self._fit_master(X, y, cv)
         else:
+            logging.debug("Fitting slave: ", comm_rank)
             self._fit_slave()
 
         return self
