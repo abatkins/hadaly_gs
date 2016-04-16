@@ -12,6 +12,6 @@ mpirun -np 4 python-mpi ./hadaly_grid.py --prod --nested
  
 ## hurricane / whirlwind
 <pre>
-qsub -I -l walltime=30:00 -l nodes=2:x5672:ppn=8
-mvp2run python-mpi ./hadaly_grid.py --prod
+qsub -I -l walltime=5:00 -l nodes=1:x5672:ppn=4
+mvp2run python-mpi ./hadaly_grid.py --prod --nested
 </pre>

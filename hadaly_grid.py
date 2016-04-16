@@ -9,7 +9,7 @@ from sklearn.metrics import make_scorer
 from get_variables import VariablesXandY
 from sklearn.cross_validation import ShuffleSplit
 import logging
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
 from os import path, remove
 from mpi4py import MPI
 
@@ -57,9 +57,17 @@ def main(prod, nested):
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
-    custom_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.01, random_state=0)
+    custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.2, random_state=0) # iters should be higher
+    custom_inner_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.2, random_state=1)
+
     if nested:
-        model_tunning = NestedGridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv, multi_output=True)
+        model_tunning = NestedGridSearchCV(model_to_set,
+                                           param_grid=parameters,
+                                           scoring=f1_scorer,
+                                           cv=custom_cv,
+                                           inner_cv=custom_inner_cv,
+                                           multi_output=True
+        )
     else:
         model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv)
 
