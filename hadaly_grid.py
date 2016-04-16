@@ -76,12 +76,12 @@ def main(prod, nested):
             csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))
             scores.to_csv(csv_file, index=False)
 
-        print(model_tunning.best_score_)
+        #print(model_tunning.best_score_)
         print(model_tunning.best_params_)
 
-        logging.info("best score: " + str(model_tunning.best_score_))
+        #logging.info("best score: " + str(model_tunning.best_score_))
         logging.info("best params: " + str(model_tunning.best_params_))
-        logging.info("best estimator: " + str(model_tunning.best_estimator_))
+        #logging.info("best estimator: " + str(model_tunning.best_estimator_))
 
         logging.info("Done!")
 
