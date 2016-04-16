@@ -71,8 +71,6 @@ def main(prod, nested):
     #logging.info("Dumping model...")
     #joblib.dump(model_tunning, output_path)
 
-
-
     if rank == 0:
         for i, scores in enumerate(model_tunning.grid_scores_):
             csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))

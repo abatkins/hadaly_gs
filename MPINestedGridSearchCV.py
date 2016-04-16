@@ -379,12 +379,12 @@ class NestedGridSearchCV(BaseEstimator):
         slave.run()
 
     def fit(self, X, y):
-        logging.info("comm_size:" + str(comm_size))
+        LOG.info("comm_size:" + str(comm_size))
         X, y = check_X_y(X, y, force_all_finite=False, multi_output=self.multi_output, accept_sparse='csr')
         _check_param_grid(self.param_grid)
 
         cv = check_cv(self.cv, X, y, classifier=is_classifier(self.estimator))
-        logging.info("cv length:" + str(len(cv)))
+        LOG.info("cv length:" + str(len(cv)))
 
         self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
 
@@ -392,7 +392,7 @@ class NestedGridSearchCV(BaseEstimator):
             self._fit_master(X, y, cv)
             LOG.debug("Master fitted")
         else:
-            logging.debug("Fitting slave: ", comm_rank)
+            LOG.debug("Fitting slave: ", comm_rank)
             self._fit_slave()
             LOG.debug("Slave finished")
 

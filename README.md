@@ -6,8 +6,8 @@
 
 ## vortex
 <pre>
-qsub -I -l walltime=10:00 -l nodes=1:c18x:ppn=3
-mpirun -np 3 python-mpi ./hadaly_grid.py --prod --nested
+qsub -I -l walltime=20:00 -l nodes=1:c18x:ppn=4
+mpirun -np 4 python-mpi ./hadaly_grid.py --prod --nested
 </pre>
  
 ## hurricane / whirlwind
