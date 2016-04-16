@@ -98,7 +98,7 @@ class MPIBatchWorker(object):
             result['fold'] = fold_id
             results.append(result)
 
-        LOG.debug("Node %d is done with fold %d", comm_rank, fold_id)
+            LOG.debug("Node %d is done with fold %d", comm_rank, fold_id)
         return results
 
 
