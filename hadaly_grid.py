@@ -57,8 +57,8 @@ def main(prod, nested):
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
-    custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.2, random_state=0) # iters should be higher
-    custom_inner_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.2, random_state=1)
+    custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.01, random_state=0) # iters should be higher
+    custom_inner_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.01, random_state=1)
 
     if nested:
         model_tunning = NestedGridSearchCV(model_to_set,
