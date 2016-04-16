@@ -392,7 +392,7 @@ class NestedGridSearchCV(BaseEstimator):
             self._fit_master(X, y, cv)
             LOG.debug("Master fitted")
         else:
-            LOG.debug("Fitting slave: ", str(comm_rank))
+            LOG.debug("Fitting slave")
             self._fit_slave()
             LOG.debug("Slave finished")
 
