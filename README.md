@@ -6,7 +6,7 @@
 
 ## vortex
 <pre>
-qsub -I -l walltime=5:00 -l nodes=1:c18x:ppn=6
+qsub -I -l walltime=10:00 -l nodes=1:c18x:ppn=6
 mpirun -np 6 python-mpi ./hadaly_grid.py --nested
 </pre>
  
