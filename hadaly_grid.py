@@ -57,7 +57,7 @@ def main(prod, nested):
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
-    custom_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.01, random_state=0) # iters should be higher
+    custom_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.20, random_state=0) # iters should be higher
     custom_inner_cv = ShuffleSplit(len(y_train), n_iter=3, test_size=0.01, random_state=1)
 
     if nested:
@@ -65,7 +65,7 @@ def main(prod, nested):
                                            param_grid=parameters,
                                            scoring=f1_scorer,
                                            cv=custom_cv,
-                                           inner_cv=custom_inner_cv,
+                                           #inner_cv=custom_inner_cv,
                                            multi_output=True
         )
     else:
@@ -88,6 +88,7 @@ def main(prod, nested):
         print(model_tunning.best_params_)
 
         #logging.info("best score: " + str(model_tunning.best_score_))
+        logging.info('cv used:' + str(custom_cv))
         logging.info("best params: " + str(model_tunning.best_params_))
         #logging.info("best estimator: " + str(model_tunning.best_estimator_))
 
