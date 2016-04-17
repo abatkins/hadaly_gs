@@ -60,7 +60,7 @@ def main(prod, nested):
     custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.01, random_state=0) # iters should be higher
     #custom_cv = 5
     #custom_inner_cv = 5
-    custom_inner_cv=lambda _x, _y: ShuffleSplit(len(y_train), n_iter=3, test_size=0.01, random_state=1)
+    custom_inner_cv=lambda _x, _y: ShuffleSplit(len(custom_cv[0][0]), n_iter=3, test_size=0.01, random_state=1)
 
     if nested:
         model_tunning = NestedGridSearchCV(model_to_set,
