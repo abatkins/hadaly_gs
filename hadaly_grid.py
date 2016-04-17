@@ -10,7 +10,7 @@ from get_variables import VariablesXandY
 from sklearn.cross_validation import ShuffleSplit
 import logging
 #from sklearn.externals import joblib
-from os import path, remove
+from os import path, remove, listdir
 from mpi4py import MPI
 
 def main(prod, nested):
@@ -28,8 +28,15 @@ def main(prod, nested):
         logging.info("Env: development")
         base_dir = ""
 
+    output_dir = path.join(base_dir,'output')
+    fileList = listdir(output_dir)
+    if rank == 0 and fileList:
+        for fileName in fileList:
+            file_path = path.join(output_dir,fileName)
+            remove(file_path)
+
     train_file = 'test.csv'
-    label_file = path.join(base_dir,'output/labels.pkl')
+    label_file = path.join(output_dir,'labels.pkl')
     variables_object = VariablesXandY(input_filename=train_file)
     y_train = variables_object.get_y_matrix(labels_pickle_filename=label_file).todense()
     n_gram = (1,2)
