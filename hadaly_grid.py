@@ -53,8 +53,8 @@ def main(prod, nested):
 
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
-    #hasher = HashingVectorizer(ngram_range=n_gram,stop_words='english', non_negative=True,norm=None, binary=False)
-    hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode")
+    hasher = HashingVectorizer(ngram_range=n_gram,stop_words='english', non_negative=True, norm=None)
+    #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode")
     vectorizer = make_pipeline(hasher, TfidfTransformer())
     x_train = vectorizer.fit_transform(text)
 
