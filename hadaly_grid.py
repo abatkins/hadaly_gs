@@ -1,17 +1,22 @@
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import SGDClassifier
 from MPINestedGridSearchCV import NestedGridSearchCV
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score
 from sklearn.metrics import make_scorer
+from sklearn.pipeline import make_pipeline
 from get_variables import VariablesXandY
 from sklearn.cross_validation import ShuffleSplit
 import logging
 #from sklearn.externals import joblib
 from os import path, remove, listdir
 from mpi4py import MPI
+import pandas as pd
 
 def main(prod, nested):
     rank = MPI.COMM_WORLD.Get_rank()
@@ -36,11 +41,25 @@ def main(prod, nested):
             remove(file_path)
 
     train_file = 'test.csv'
-    label_file = path.join(output_dir,'labels.pkl')
-    variables_object = VariablesXandY(input_filename=train_file)
-    y_train = variables_object.get_y_matrix(labels_pickle_filename=label_file).todense()
     n_gram = (1,2)
-    x_train = variables_object.get_x_matrix(n_gram)
+
+    df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
+    variables_object = VariablesXandY(input_filename=df_whole_data)
+    y_train = variables_object.get_y_matrix().todense()
+
+    text = df_whole_data['text']
+    #x_train = variables_object.get_x(text, n_gram)
+
+
+    #### This appears to be the correct way to combine these. Try this implementation.
+    # Perform an IDF normalization on the output of HashingVectorizer
+    #hasher = HashingVectorizer(ngram_range=n_gram,stop_words='english', non_negative=True,norm=None, binary=False)
+    hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode")
+    vectorizer = make_pipeline(hasher, TfidfTransformer())
+    x_train = vectorizer.fit_transform(text)
+
+    #x_train_counts = hash_vect_object.fit_transform(text)
+    #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
 
     rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
@@ -60,7 +79,7 @@ def main(prod, nested):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__C": [1000]
+        "estimator__svc__C": [1000] #[.01, 1, 10, 100, 1000, 10000]
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 

@@ -11,16 +11,23 @@ from sklearn.externals import joblib
 from sklearn import preprocessing
 import pickle
 
-
 from scipy import sparse
 from os.path import isfile
 
 import time
 
+# Get an instance of a logger
+import logging
+logger = logging.getLogger(__name__)
+
 class VariablesXandY(object):
     def __init__(self, input_filename=None):
-        if input_filename != None:
+        if isinstance(input_filename, pd.DataFrame) or not input_filename:
+            self.df_whole_data = input_filename
+        elif isfile(input_filename):
             self.df_whole_data = pd.read_csv(input_filename, sep=',', quotechar='"', encoding='utf-8')
+        else:
+            raise ValueError("Input must be filepath or dataframe!")
 
     def get_x_matrix(self, ngram_range, x_pickle_filename=None):
         x_train = self.df_whole_data['text']
@@ -54,7 +61,9 @@ class VariablesXandY(object):
             y_train_binarized = sparse.csr_matrix(label_binarizer_object.fit_transform(y_train))
 
             self.fitted_labels = label_binarizer_object.fit(y_train)
-            joblib.dump(self.fitted_labels, labels_pickle_filename)
+
+            if labels_pickle_filename:
+                joblib.dump(self.fitted_labels, labels_pickle_filename)
 
             return y_train_binarized
 
