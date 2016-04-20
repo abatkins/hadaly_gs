@@ -55,7 +55,7 @@ def main(prod, nested):
     # Perform an IDF normalization on the output of HashingVectorizer
     hasher = HashingVectorizer(ngram_range=n_gram,stop_words='english', non_negative=True, norm=None)
     #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode")
-    vectorizer = make_pipeline(hasher, TfidfTransformer())
+    vectorizer = make_pipeline(hasher, TfidfTransformer(sublinear_tf=True))
     x_train = vectorizer.fit_transform(text)
 
     #x_train_counts = hash_vect_object.fit_transform(text)
