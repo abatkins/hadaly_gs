@@ -63,6 +63,7 @@ def main(prod, nested):
 
     rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
+    #SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0)
     pipe = Pipeline(steps=[
         #('rbm', rbm),
         ('svc', svc)
@@ -74,6 +75,11 @@ def main(prod, nested):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
+        'loss': 'hinge',
+        'penalty': 'l2',
+        'n_iter': 50,
+        'alpha': 0.00001,
+        'fit_intercept': True,
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
@@ -108,9 +114,10 @@ def main(prod, nested):
     #joblib.dump(model_tunning, output_path)
 
     if rank == 0:
-        for i, scores in enumerate(model_tunning.grid_scores_):
-            csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))
-            scores.to_csv(csv_file, index=False)
+        if nested:
+            for i, scores in enumerate(model_tunning.grid_scores_):
+                csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))
+                scores.to_csv(csv_file, index=False)
 
         #print(model_tunning.best_score_)
         print(model_tunning.best_params_)
