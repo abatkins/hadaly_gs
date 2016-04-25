@@ -69,7 +69,7 @@ def main(prod, nested):
     #SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0)
     pipe = Pipeline(steps=[
         #('rbm', rbm),
-        ('pca', pca),
+        #('pca', pca),
         ('svc', svc)
     ])
 
@@ -79,7 +79,7 @@ def main(prod, nested):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__pca__n_components': [.8, .9, .95, .99],
+        #'estimator__pca__n_components': [.8, .9, .95, .99],
         #'estimator__svc__loss': 'hinge',
         #'estimator__svc__penalty': 'l2',
         #'estimator__svc__n_iter': 50,
