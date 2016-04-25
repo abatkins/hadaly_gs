@@ -61,11 +61,15 @@ def main(prod, nested):
     #x_train_counts = hash_vect_object.fit_transform(text)
     #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
 
-    rbm = BernoulliRBM(random_state=0, verbose=True)
+    # PCA
+    pca = PCA()
+
+    #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
     #SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0)
     pipe = Pipeline(steps=[
         #('rbm', rbm),
+        ('pca', pca),
         ('svc', svc)
     ])
 
@@ -75,11 +79,12 @@ def main(prod, nested):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'loss': 'hinge',
-        'penalty': 'l2',
-        'n_iter': 50,
-        'alpha': 0.00001,
-        'fit_intercept': True,
+        'estimator__pca__n_components': [.8, .9, .95, .99],
+        #'estimator__svc__loss': 'hinge',
+        #'estimator__svc__penalty': 'l2',
+        #'estimator__svc__n_iter': 50,
+        #'estimator__svc__alpha': 0.00001,
+        #'estimator__svc__fit_intercept': True,
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
