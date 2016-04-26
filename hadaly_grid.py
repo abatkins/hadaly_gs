@@ -85,7 +85,7 @@ def main(prod, nested):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__C": [1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__C": [1000, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
