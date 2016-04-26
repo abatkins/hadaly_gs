@@ -81,7 +81,10 @@ class VariablesXandY(object):
     @staticmethod
     def get_x(text,ngram_range):
 
-        hash_vect_object = HashingVectorizer(ngram_range=ngram_range, stop_words="english", strip_accents="unicode")
+        hash_vect_object = HashingVectorizer(ngram_range=ngram_range,
+                                             stop_words="english",
+                                             strip_accents="unicode",
+                                             token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
         tfidf_transformer_object = TfidfTransformer(use_idf=True)
 
         x_train_counts = hash_vect_object.fit_transform(text)
