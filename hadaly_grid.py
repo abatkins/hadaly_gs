@@ -53,18 +53,19 @@ def main(prod, nested):
 
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
-    hasher = HashingVectorizer(ngram_range=n_gram,stop_words='english', non_negative=True, norm=None)
-    #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode")
+    #hasher = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", non_negative=True, norm=None, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode")
     vectorizer = make_pipeline(hasher, TfidfTransformer())
     x_train = vectorizer.fit_transform(text)
 
     #x_train_counts = hash_vect_object.fit_transform(text)
     #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
 
-    rbm = BernoulliRBM(random_state=0, verbose=True)
+    #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
-    #SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0)
+    #sgd = SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0, fit_intercept=True)
     pipe = Pipeline(steps=[
+        #('sgd', sgd),
         #('rbm', rbm),
         ('svc', svc)
     ])
@@ -75,11 +76,10 @@ def main(prod, nested):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'loss': 'hinge',
-        'penalty': 'l2',
-        'n_iter': 50,
-        'alpha': 0.00001,
-        'fit_intercept': True,
+        #'estimator__sgd__loss': 'hinge',
+        #'estimator__sgd__penalty': 'l2',
+        #'estimator__sgd__n_iter': 50,
+        #'estimator__sgd__alpha': 0.00001,
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
