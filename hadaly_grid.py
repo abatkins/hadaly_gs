@@ -18,6 +18,8 @@ from os import path, remove, listdir, makedirs, getcwd
 import datetime
 from mpi4py import MPI
 import pandas as pd
+import sys
+import argparse
 
 rank = MPI.COMM_WORLD.Get_rank()
 master = bool(rank == 0)
@@ -46,8 +48,12 @@ def create_jobdir(prod, jobname):
 
     return job_dir
 
-def main(prod, nested, jobname):
-    train_file = 'test.csv'
+def main(args):
+    train_file = args.filename
+    prod = args.prod
+    nested = args.nested
+    jobname = args.jobname
+    
     n_gram = (1, 2)
     log_filename = 'gridsearch.log'
 
@@ -145,16 +151,22 @@ def main(prod, nested, jobname):
 
 if __name__ == "__main__":
 
-    import sys
-    prod, nested = (False, False)
-    jobname = "your_job"
-    args = sys.argv[1:]
-    for i in range(len(args)):
-        if args[i] == "--prod":
-            prod = True
-        if args[i] == "--nested":
-            nested = True
-        if args[i] not in ["--prod", "--nested"]:
-            jobname = args[i]
+    #prod, nested = (False, False)
+    #jobname = "your_job"
+    #args = sys.argv[1:]
 
-    main(prod, nested, jobname)
+    parser = argparse.ArgumentParser(description="Run Hadaly GridsearchCV")
+    parser.add_argument("--nested", help="use nested gridsearch", action="store_true")
+    parser.add_argument("--prod", help="set environment to production", action="store_true")
+    parser.add_argument("-f", "--filename", help="filename", type=str, default="test.csv")
+    parser.add_argument("-j", "--jobname", help="jobname (specifies output directory)", type=str, default="your_job")
+    args = parser.parse_args()
+    #for i in range(len(args)):
+    #    if args[i] == "--prod":
+    #        prod = True
+    #    if args[i] == "--nested":
+    #        nested = True
+    #    if args[i] not in ["--prod", "--nested"]:
+    #        jobname = args[i]
+
+    main(args)
