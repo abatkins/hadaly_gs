@@ -20,22 +20,27 @@ import pandas as pd
 
 def main(prod, nested):
     rank = MPI.COMM_WORLD.Get_rank()
+    master = bool(rank == 0)
     LOG_FILENAME = 'logs/gridsearch.log'
 
-    if rank == 0 and path.isfile(LOG_FILENAME):
+
+    if master and path.isfile(LOG_FILENAME):
         remove(LOG_FILENAME)
 
     logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG, format='%(asctime)s %(message)s')
     if prod:
-        logging.info("Env: production")
         base_dir = "../scr00"
+        if master:
+            logging.info("Env: production")
     else:
-        logging.info("Env: development")
         base_dir = ""
+        if master:
+            logging.info("Env: development")
+
 
     output_dir = path.join(base_dir,'output')
     fileList = listdir(output_dir)
-    if rank == 0 and fileList:
+    if master and fileList:
         for fileName in fileList:
             file_path = path.join(output_dir,fileName)
             remove(file_path)
@@ -105,7 +110,9 @@ def main(prod, nested):
     else:
         model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv)
 
-    logging.info("Fitting model...")
+    if master:
+        logging.info("Fitting model...")
+        logging.info(model_tunning)
     model_tunning.fit(x_train, y_train)
 
     #output_path = path.join(base_dir,'output/output.pkl')
@@ -113,7 +120,7 @@ def main(prod, nested):
     #logging.info("Dumping model...")
     #joblib.dump(model_tunning, output_path)
 
-    if rank == 0:
+    if master:
         if nested:
             for i, scores in enumerate(model_tunning.grid_scores_):
                 csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))

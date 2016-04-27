@@ -22,6 +22,7 @@ MPI_TAG_TRAIN_TEST_DATA = 5
 comm = MPI.COMM_WORLD
 comm_size = comm.Get_size()
 comm_rank = comm.Get_rank()
+master = bool(comm_rank == 0)
 
 def _get_best_parameters(fold_results, param_names):
     """Get best setting of parameters from grid search
@@ -374,16 +375,18 @@ class NestedGridSearchCV(BaseEstimator):
         slave.run()
 
     def fit(self, X, y):
-        LOG.info("comm_size:" + str(comm_size))
+        if master:
+            LOG.info("comm_size:" + str(comm_size))
         X, y = check_X_y(X, y, force_all_finite=False, multi_output=self.multi_output, accept_sparse='csr')
         _check_param_grid(self.param_grid)
 
         cv = check_cv(self.cv, X, y, classifier=is_classifier(self.estimator))
-        LOG.info("cv length:" + str(len(cv)))
+        if master:
+            LOG.info("cv length:" + str(len(cv)))
 
         self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
 
-        if comm_rank == 0:
+        if master:
             self._fit_master(X, y, cv)
         else:
             self._fit_slave()
