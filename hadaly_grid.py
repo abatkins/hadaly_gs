@@ -109,6 +109,11 @@ def main(args):
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         "estimator__svc__C": [1000] #, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
     }
+
+    if master:
+        logging.info(pca)
+        logging.info(parameters)
+
     f1_scorer = make_scorer(f1_score, average='samples')
 
     #custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.20, random_state=0) # iters should be higher
