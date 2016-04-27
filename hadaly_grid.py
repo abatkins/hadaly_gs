@@ -41,7 +41,7 @@ def create_jobdir(prod, jobname):
     fileList = listdir(job_dir)
     if master and fileList:
         for fileName in fileList:
-            file_path = path.join(output_dir, fileName)
+            file_path = path.join(job_dir, fileName)
             remove(file_path)
 
     return job_dir
@@ -56,10 +56,10 @@ def main(prod, nested, jobname):
     logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s')
 
     df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
+    text = df_whole_data['text']
+
     variables_object = VariablesXandY(input_filename=df_whole_data)
     y_train = variables_object.get_y_matrix().todense()
-
-    text = df_whole_data['text']
     #x_train = variables_object.get_x(text, n_gram)
 
 
