@@ -14,62 +14,75 @@ from get_variables import VariablesXandY
 from sklearn.cross_validation import ShuffleSplit
 import logging
 #from sklearn.externals import joblib
-from os import path, remove, listdir
+from os import path, remove, listdir, makedirs
 from mpi4py import MPI
 import pandas as pd
+import argparse
 
-def main(prod, nested):
-    rank = MPI.COMM_WORLD.Get_rank()
-    LOG_FILENAME = 'logs/gridsearch.log'
+rank = MPI.COMM_WORLD.Get_rank()
+master = bool(rank == 0)
 
-    if rank == 0 and path.isfile(LOG_FILENAME):
-        remove(LOG_FILENAME)
-
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG, format='%(asctime)s %(message)s')
+# Handles jobdir creation. This is where logs and output for the job go.
+def create_jobdir(prod, jobname):
     if prod:
-        logging.info("Env: production")
         base_dir = "../scr00"
     else:
-        logging.info("Env: development")
         base_dir = ""
 
-    output_dir = path.join(base_dir,'output')
-    fileList = listdir(output_dir)
-    if rank == 0 and fileList:
+    output_dir = path.join(base_dir, 'output')
+    job_dir = path.join(output_dir, jobname)
+
+    try:
+        makedirs(job_dir)
+    except OSError as e:
+        if e.errno != 17:
+            raise  # this is not a "directory exists" error
+
+    fileList = listdir(job_dir)
+    if master and fileList:
         for fileName in fileList:
-            file_path = path.join(output_dir,fileName)
+            file_path = path.join(job_dir, fileName)
             remove(file_path)
 
-    train_file = 'test.csv'
-    n_gram = (1,2)
+    return job_dir
+
+def main(args):
+    train_file = args.filename
+    prod = args.prod
+    nested = args.nested
+    jobname = args.jobname
+
+    n_gram = (1, 2)
+    log_filename = 'gridsearch.log'
+
+    job_dir = create_jobdir(prod, jobname)
+    log_path = path.join(job_dir, log_filename)
+    logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s')
 
     df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
+    text = df_whole_data['text']
+
     variables_object = VariablesXandY(input_filename=df_whole_data)
     y_train = variables_object.get_y_matrix().todense()
-
-    text = df_whole_data['text']
     #x_train = variables_object.get_x(text, n_gram)
 
 
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
-    hasher = HashingVectorizer(ngram_range=n_gram,stop_words='english', non_negative=True, norm=None)
-    #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode")
+    hasher = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode",token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b")
     vectorizer = make_pipeline(hasher, TfidfTransformer())
     x_train = vectorizer.fit_transform(text)
 
     #x_train_counts = hash_vect_object.fit_transform(text)
     #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
 
-    # PCA
-    pca = PCA()
-
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
-    #SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0)
+    #sgd = SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0, fit_intercept=True)
     pipe = Pipeline(steps=[
+        #('sgd', sgd),
         #('rbm', rbm),
-        #('pca', pca),
         ('svc', svc)
     ])
 
@@ -79,18 +92,16 @@ def main(prod, nested):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        #'estimator__pca__n_components': [.8, .9, .95, .99],
-        #'estimator__svc__loss': 'hinge',
-        #'estimator__svc__penalty': 'l2',
-        #'estimator__svc__n_iter': 50,
-        #'estimator__svc__alpha': 0.00001,
-        #'estimator__svc__fit_intercept': True,
+        #'estimator__sgd__loss': 'hinge',
+        #'estimator__sgd__penalty': 'l2',
+        #'estimator__sgd__n_iter': 50,
+        #'estimator__sgd__alpha': 0.00001,
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__C": [1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__C": [1000, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
@@ -110,7 +121,9 @@ def main(prod, nested):
     else:
         model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv)
 
-    logging.info("Fitting model...")
+    if master:
+        logging.info("Fitting model...")
+        logging.info(model_tunning)
     model_tunning.fit(x_train, y_train)
 
     #output_path = path.join(base_dir,'output/output.pkl')
@@ -118,10 +131,10 @@ def main(prod, nested):
     #logging.info("Dumping model...")
     #joblib.dump(model_tunning, output_path)
 
-    if rank == 0:
+    if master:
         if nested:
             for i, scores in enumerate(model_tunning.grid_scores_):
-                csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))
+                csv_file = path.join(job_dir,'grid-scores-%d.csv' % (i + 1))
                 scores.to_csv(csv_file, index=False)
 
         #print(model_tunning.best_score_)
@@ -136,12 +149,11 @@ def main(prod, nested):
 
 if __name__ == "__main__":
 
-    import sys
-    prod, nested = (False,False)
-    args = sys.argv[1:]
-    for i in range(len(args)):
-        if args[i] == "--prod":
-            prod = True
-        if args[i] == "--nested":
-            nested = True
-    main(prod, nested)
+    parser = argparse.ArgumentParser(description="Run Hadaly GridsearchCV")
+    parser.add_argument("--nested", help="use nested gridsearch", action="store_true")
+    parser.add_argument("--prod", help="set environment to production", action="store_true")
+    parser.add_argument("-f", "--filename", help="filename", type=str, default="test.csv")
+    parser.add_argument("-j", "--jobname", help="jobname (specifies output directory)", type=str, default="your_job")
+    args = parser.parse_args()
+
+    main(args)
