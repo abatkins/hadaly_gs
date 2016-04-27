@@ -89,9 +89,9 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__sgd__loss': 'squared_hinge', # squared_hinge same as linear svc
-        'estimator__sgd__penalty': 'l2', # l2 is same as linear svc
-        'estimator__sgd__n_iter': 50,
+        'estimator__sgd__loss': ['squared_hinge'], # squared_hinge same as linear svc
+        'estimator__sgd__penalty': ['l2'], # l2 is same as linear svc
+        'estimator__sgd__n_iter': [50],
         'estimator__sgd__alpha': [0.00001, .0001, .001, .01]
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
