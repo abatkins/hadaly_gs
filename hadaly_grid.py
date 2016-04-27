@@ -12,6 +12,7 @@ from sklearn.metrics import make_scorer
 from sklearn.pipeline import make_pipeline
 from get_variables import VariablesXandY
 from sklearn.cross_validation import ShuffleSplit
+from sklearn.decomposition import TruncatedSVD
 import logging
 #from sklearn.externals import joblib
 from os import path, remove, listdir, makedirs
@@ -77,12 +78,16 @@ def main(args):
     #x_train_counts = hash_vect_object.fit_transform(text)
     #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
 
+    # PCA
+    pca = TruncatedSVD()
+
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
     #sgd = SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0, fit_intercept=True)
     pipe = Pipeline(steps=[
         #('sgd', sgd),
         #('rbm', rbm),
+        ('pca', pca),
         ('svc', svc)
     ])
 
@@ -92,6 +97,7 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
+        'estimator__pca__n_components': [2,3,4,5],
         #'estimator__sgd__loss': 'hinge',
         #'estimator__sgd__penalty': 'l2',
         #'estimator__sgd__n_iter': 50,
@@ -101,7 +107,7 @@ def main(args):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__C": [1000, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__C": [1000] #, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
