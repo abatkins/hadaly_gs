@@ -53,7 +53,7 @@ def main(args):
     prod = args.prod
     nested = args.nested
     jobname = args.jobname
-    
+
     n_gram = (1, 2)
     log_filename = 'gridsearch.log'
 
