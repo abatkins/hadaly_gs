@@ -1,4 +1,4 @@
 logs/*
 output/*
-idea/
+.idea/
 __pycache__/
