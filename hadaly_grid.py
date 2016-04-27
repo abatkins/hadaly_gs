@@ -14,39 +14,46 @@ from get_variables import VariablesXandY
 from sklearn.cross_validation import ShuffleSplit
 import logging
 #from sklearn.externals import joblib
-from os import path, remove, listdir
+from os import path, remove, listdir, makedirs, getcwd
+import datetime
 from mpi4py import MPI
 import pandas as pd
 
-def main(prod, nested):
-    rank = MPI.COMM_WORLD.Get_rank()
-    master = bool(rank == 0)
-    LOG_FILENAME = 'logs/gridsearch.log'
+rank = MPI.COMM_WORLD.Get_rank()
+master = bool(rank == 0)
 
-
-    if master and path.isfile(LOG_FILENAME):
-        remove(LOG_FILENAME)
-
-    logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG, format='%(asctime)s %(message)s')
+# Handles jobdir creation. This is where logs and output for the job go.
+def create_jobdir(prod, jobname):
     if prod:
         base_dir = "../scr00"
-        if master:
-            logging.info("Env: production")
     else:
         base_dir = ""
-        if master:
-            logging.info("Env: development")
 
+    output_dir = path.join(base_dir, 'output')
+    job_dir = path.join(output_dir, jobname)
 
-    output_dir = path.join(base_dir,'output')
-    fileList = listdir(output_dir)
+    try:
+        makedirs(job_dir)
+    except OSError as e:
+        if e.errno != 17:
+            raise  # this is not a "directory exists" error
+
+    fileList = listdir(job_dir)
     if master and fileList:
         for fileName in fileList:
-            file_path = path.join(output_dir,fileName)
+            file_path = path.join(output_dir, fileName)
             remove(file_path)
 
+    return job_dir
+
+def main(prod, nested, jobname):
     train_file = 'test.csv'
-    n_gram = (1,2)
+    n_gram = (1, 2)
+    log_filename = 'gridsearch.log'
+
+    job_dir = create_jobdir(prod, jobname)
+    log_path = path.join(job_dir, log_filename)
+    logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s')
 
     df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
     variables_object = VariablesXandY(input_filename=df_whole_data)
@@ -123,7 +130,7 @@ def main(prod, nested):
     if master:
         if nested:
             for i, scores in enumerate(model_tunning.grid_scores_):
-                csv_file = path.join(base_dir,'output/grid-scores-%d.csv' % (i + 1))
+                csv_file = path.join(job_dir,'grid-scores-%d.csv' % (i + 1))
                 scores.to_csv(csv_file, index=False)
 
         #print(model_tunning.best_score_)
@@ -139,11 +146,15 @@ def main(prod, nested):
 if __name__ == "__main__":
 
     import sys
-    prod, nested = (False,False)
+    prod, nested = (False, False)
+    jobname = "your_job"
     args = sys.argv[1:]
     for i in range(len(args)):
         if args[i] == "--prod":
             prod = True
         if args[i] == "--nested":
             nested = True
-    main(prod, nested)
+        if args[i] not in ["--prod", "--nested"]:
+            jobname = args[i]
+
+    main(prod, nested, jobname)
