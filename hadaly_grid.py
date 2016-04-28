@@ -97,7 +97,7 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__pca__n_components': [2,3,4,5],
+        'estimator__pca__n_components': [2,100],
         #'estimator__sgd__loss': 'hinge',
         #'estimator__sgd__penalty': 'l2',
         #'estimator__sgd__n_iter': 50,
