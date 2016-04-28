@@ -59,7 +59,6 @@ def main(args):
 
     df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
     text = df_whole_data['text']
-    x_train = df_whole_data[['text']]
 
     variables_object = VariablesXandY(input_filename=df_whole_data)
     y_train = variables_object.get_y_matrix().todense()
@@ -69,24 +68,17 @@ def main(args):
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
     n_gram = (1, 2)
-    #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode",token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b")
     hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode",
                              non_negative=True, norm=None,
                              token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b" # tokens are character strings of 2 or more characters
     )
-    vect = TfidfTransformer()
-    #vect = make_pipeline(hash, TfidfTransformer())
-    #x_train = vect.fit_transform(text)
-
-    #x_train_counts = hash_vect_object.fit_transform(text)
-    #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
+    vect = make_pipeline(hash, TfidfTransformer())
+    x_train = vect.fit_transform(text)
 
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     #svc = LinearSVC(class_weight="balanced")
     sgd = SGDClassifier(n_jobs=1, random_state=0)
     pipe = Pipeline(steps=[
-        ('hash', hash),
-        ('vect', vect),
         #('rbm', rbm),
         ('sgd', sgd)
         #('svc', svc)
@@ -98,7 +90,6 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__hash__ngram_range': [(1, 2)],
         'estimator__sgd__loss': ['squared_hinge'],#['hinge','squared_hinge','log','modified_huber','perceptron'], # squared_hinge same as linear svc
         'estimator__sgd__penalty': ['l2'], #['l2','l1','elasticnet']# l2 is same as linear svc
         'estimator__sgd__n_iter': [15, 20, 25, 30],
