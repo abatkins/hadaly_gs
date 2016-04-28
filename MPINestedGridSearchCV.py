@@ -348,7 +348,8 @@ class NestedGridSearchCV(BaseEstimator):
         for i, (train_index, test_index) in enumerate(cv):
             LOG.info("Training fold %d", i + 1)
 
-            train_X = X[train_index, :]
+            #train_X = X[train_index, :]
+            train_X = X.ix[train_index]
             train_y = y[train_index]
 
             grid_results = self._grid_search(train_X, train_y)
