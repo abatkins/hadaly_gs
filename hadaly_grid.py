@@ -60,7 +60,8 @@ def main(args):
     logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s')
 
     df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
-    text = df_whole_data['text']
+    #text = df_whole_data['text']
+    x_train = df_whole_data['text']
 
     variables_object = VariablesXandY(input_filename=df_whole_data)
     y_train = variables_object.get_y_matrix().todense()
@@ -69,10 +70,10 @@ def main(args):
 
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
-    hasher = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode",token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b")
-    vectorizer = make_pipeline(hasher, TfidfTransformer())
-    x_train = vectorizer.fit_transform(text)
+    vect = make_pipeline(hash, TfidfTransformer())
+    #x_train = vect.fit_transform(text)
 
     #x_train_counts = hash_vect_object.fit_transform(text)
     #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
@@ -81,6 +82,8 @@ def main(args):
     svc = LinearSVC(class_weight="balanced")
     #sgd = SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0, fit_intercept=True)
     pipe = Pipeline(steps=[
+        ('hash', hash),
+        ('vect', vect),
         #('sgd', sgd),
         #('rbm', rbm),
         ('svc', svc)
