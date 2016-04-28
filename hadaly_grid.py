@@ -61,7 +61,7 @@ def main(args):
 
     df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
     #text = df_whole_data['text']
-    x_train = df_whole_data['text']
+    x_train = df_whole_data[['text']]
 
     variables_object = VariablesXandY(input_filename=df_whole_data)
     y_train = variables_object.get_y_matrix().todense()
