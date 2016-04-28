@@ -69,8 +69,11 @@ def main(args):
 
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
-    hasher = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
-    #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode",token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b")
+    hasher = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode",
+                               non_negative=True, norm=None,
+                               token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b"  # tokens are character strings of 2 or more characters
+                               )
+
     vectorizer = make_pipeline(hasher, TfidfTransformer())
     x_train = vectorizer.fit_transform(text)
 
@@ -91,8 +94,8 @@ def main(args):
     parameters = {
         'estimator__sgd__loss': ['squared_hinge'], # squared_hinge same as linear svc
         'estimator__sgd__penalty': ['l2'], # l2 is same as linear svc
-        'estimator__sgd__n_iter': [50],
-        'estimator__sgd__alpha': [0.00001, .0001, .001, .01]
+        'estimator__sgd__n_iter': [25, 50, 100, 200],
+        'estimator__sgd__alpha': [0.00001]
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
