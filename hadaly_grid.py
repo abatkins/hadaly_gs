@@ -92,10 +92,14 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__sgd__loss': ['squared_hinge'], # squared_hinge same as linear svc
-        'estimator__sgd__penalty': ['l2'], # l2 is same as linear svc
-        'estimator__sgd__n_iter': [25, 50, 100, 200],
-        'estimator__sgd__alpha': [0.00001]
+        'estimator__sgd__loss': ['squared_hinge'], #['hinge','squared_hinge','log','modified_huber','perceptron']# squared_hinge same as linear svc
+        'estimator__sgd__penalty': ['l2'], #['l2','l1','elasticnet']# l2 is same as linear svc
+        'estimator__sgd__n_iter': [1, 5, 10, 25],
+        'estimator__sgd__alpha': [0.00001],
+        #'estimator__sgd__l1_ratio': [0.01, 0.15, 0.3, 0.5], # use with elasticnet
+        #'estimator__sgd__learning_rate': ['constant, optimal, invscaling'],
+        #'estimator__sgd__eta0': [0.0, 0.01, .10, 0.3], # used when learning rate is constant or invscaling
+        #'estimator__sgd__power_t': [0.01, 0.2, 0.5, 0.75], # exponent used in invscaling
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
