@@ -75,7 +75,8 @@ def main(args):
                              token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b" # tokens are character strings of 2 or more characters
     )
     #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode",token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b")
-    vect = make_pipeline(hash, TfidfTransformer())
+    vect = TfidfTransformer()
+    #vect = make_pipeline(hash, TfidfTransformer())
     #x_train = vect.fit_transform(text)
 
     #x_train_counts = hash_vect_object.fit_transform(text)
