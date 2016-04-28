@@ -52,7 +52,7 @@ def main(args):
     nested = args.nested
     jobname = args.jobname
 
-    n_gram = (1, 2)
+
     log_filename = 'gridsearch.log'
 
     job_dir = create_jobdir(prod, jobname)
@@ -70,7 +70,10 @@ def main(args):
 
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
-    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hash = HashingVectorizer(stop_words='english', strip_accents="unicode",
+                             non_negative=True, norm=None,
+                             token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b" # tokens are character strings of 2 or more characters
+    )
     #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode",token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b")
     vect = make_pipeline(hash, TfidfTransformer())
     #x_train = vect.fit_transform(text)
@@ -95,9 +98,10 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__sgd__loss': ['hinge','squared_hinge','log','modified_huber','perceptron'], # squared_hinge same as linear svc
+        'estimator__hash__ngram_range': [(1, 2)],
+        'estimator__sgd__loss': ['squared_hinge'],#['hinge','squared_hinge','log','modified_huber','perceptron'], # squared_hinge same as linear svc
         'estimator__sgd__penalty': ['l2'], #['l2','l1','elasticnet']# l2 is same as linear svc
-        'estimator__sgd__n_iter': [25],
+        'estimator__sgd__n_iter': [15, 20, 25, 30],
         'estimator__sgd__alpha': [0.00001],
         #'estimator__sgd__l1_ratio': [0.01, 0.15, 0.3, 0.5], # use with elasticnet
         #'estimator__sgd__learning_rate': ['constant, optimal, invscaling'],
