@@ -109,11 +109,11 @@ def main(args):
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 
-    custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.10, random_state=0) # iters should be higher
-    #custom_cv = 5
-    #custom_inner_cv = 3
-    new_size = int(len(y_train)*(1 - custom_cv.test_size))
-    custom_inner_cv = lambda _x, _y: ShuffleSplit(new_size, n_iter=3, test_size=0.10, random_state=1)
+    #custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.10, random_state=0) # iters should be higher
+    custom_cv = 5
+    custom_inner_cv = 3
+    #new_size = int(len(y_train)*(1 - custom_cv.test_size))
+    #custom_inner_cv = lambda _x, _y: ShuffleSplit(new_size, n_iter=3, test_size=0.10, random_state=1)
 
     if nested:
         model_tunning = NestedGridSearchCV(model_to_set,
