@@ -377,7 +377,7 @@ class NestedGridSearchCV(BaseEstimator):
     def fit(self, X, y):
         if master:
             LOG.info("comm_size:" + str(comm_size))
-        X, y = check_X_y(X, y, force_all_finite=False, multi_output=self.multi_output, accept_sparse='csr')
+        #X, y = check_X_y(X, y, force_all_finite=False, multi_output=self.multi_output, accept_sparse='csr')
         _check_param_grid(self.param_grid)
 
         cv = check_cv(self.cv, X, y, classifier=is_classifier(self.estimator))
