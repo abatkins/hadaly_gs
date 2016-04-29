@@ -51,6 +51,7 @@ def main(args):
     prod = args.prod
     nested = args.nested
     jobname = args.jobname
+    solo = args.solo
 
     n_gram = (1, 2)
     log_filename = 'gridsearch.log'
@@ -69,10 +70,10 @@ def main(args):
 
     #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
-    hasher = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     #hasher = HashingVectorizer(ngram_range=n_gram, stop_words="english", strip_accents="unicode",token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b")
-    vectorizer = make_pipeline(hasher, TfidfTransformer())
-    x_train = vectorizer.fit_transform(text)
+    vect = make_pipeline(hash, TfidfTransformer())
+    x_train = vect.fit_transform(text)
 
     #x_train_counts = hash_vect_object.fit_transform(text)
     #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
@@ -118,40 +119,54 @@ def main(args):
                                            inner_cv=custom_inner_cv,
                                            multi_output=True
         )
+    elif solo:
+        train_set, test_set = ShuffleSplit(len(y_train), n_iter=1, test_size=0.20, random_state=0)[0]
+        x_test = x_train.loc[test_set].reset_index(drop=True)
+        y_test = y_train.loc[test_set].reset_index(drop=True)
+        x_train = x_train.loc[train_set].reset_index(drop=True)
+        y_train = y_train.loc[train_set].reset_index(drop=True)
+
+        model_tunning = model_to_set
     else:
         model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv)
 
     if master:
         logging.info("Fitting model...")
+        logging.info(vect)
         logging.info(model_tunning)
     model_tunning.fit(x_train, y_train)
 
-    #output_path = path.join(base_dir,'output/output.pkl')
+    # output_path = path.join(base_dir,'output/output.pkl')
 
-    #logging.info("Dumping model...")
-    #joblib.dump(model_tunning, output_path)
+    # logging.info("Dumping model...")
+    # joblib.dump(model_tunning, output_path)
 
     if master:
         if nested:
             for i, scores in enumerate(model_tunning.grid_scores_):
-                csv_file = path.join(job_dir,'grid-scores-%d.csv' % (i + 1))
+                csv_file = path.join(job_dir, 'grid-scores-%d.csv' % (i + 1))
                 scores.to_csv(csv_file, index=False)
 
-        #print(model_tunning.best_score_)
-        print(model_tunning.best_params_)
-
-        #logging.info("best score: " + str(model_tunning.best_score_))
-        logging.info('cv used:' + str(custom_cv))
-        logging.info("best params: " + str(model_tunning.best_params_))
-        #logging.info("best estimator: " + str(model_tunning.best_estimator_))
+            print(model_tunning.best_params_)
+            logging.info('cv used:' + str(custom_cv))
+            logging.info("best params: " + str(model_tunning.best_params_))
+        elif solo:
+            y_pred = model_tunning.predict(x_test)
+            score = f1_score(y_test, y_pred)
+            logging.info("f1_score: %s" % str(score))
+        else:
+            print(model_tunning.best_params_)
+            logging.info('cv used:' + str(custom_cv))
+            logging.info("best params: " + str(model_tunning.best_params_))
 
         logging.info("Done!")
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Hadaly GridsearchCV")
     parser.add_argument("--nested", help="use nested gridsearch", action="store_true")
     parser.add_argument("--prod", help="set environment to production", action="store_true")
+    parser.add_argument("--solo", help="Test model without cross-validation", action="store_true")
     parser.add_argument("-f", "--filename", help="filename", type=str, default="test.csv")
     parser.add_argument("-j", "--jobname", help="jobname (specifies output directory)", type=str, default="your_job")
     args = parser.parse_args()
