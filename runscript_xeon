@@ -1,3 +1,3 @@
 #!/bin/tcsh
 cd $PBS_O_WORKDIR
-mvp2run python-mpi ./hadaly_grid.py -f aiddata_full.csv --nested
+mvp2run python-mpi ./hadaly_grid.py -f aiddata_full.csv --gridsearch nested
