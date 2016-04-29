@@ -126,6 +126,7 @@ def main(args):
 
     if master:
         logging.info("Fitting model...")
+        logging.info(vect)
         logging.info(model_tunning)
     model_tunning.fit(x_train, y_train)
 
