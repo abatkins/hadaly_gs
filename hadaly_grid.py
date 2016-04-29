@@ -80,9 +80,9 @@ def main(args):
 
     # Perform an IDF normalization on the output of HashingVectorizer
     n_gram = (1, 2)
-    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode"#,
-                             #non_negative=True, norm=None,
-                             #token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b" # tokens are character strings of 2 or more characters
+    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode",
+                             non_negative=True, norm=None,
+                             token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b" # tokens are character strings of 2 or more characters
     )
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
@@ -102,12 +102,12 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__sgd__loss': ['squared_hinge'],#['hinge','squared_hinge','log','modified_huber','perceptron'], # squared_hinge same as linear svc
-        'estimator__sgd__penalty': ['l2'], #['l2','l1','elasticnet']# l2 is same as linear svc
-        'estimator__sgd__n_iter': [15, 20, 25, 30],
-        'estimator__sgd__alpha': [0.00001],
-        #'estimator__sgd__l1_ratio': [0.01, 0.15, 0.3, 0.5], # use with elasticnet
-        #'estimator__sgd__learning_rate': ['constant, optimal, invscaling'],
+        'estimator__sgd__loss': ['hinge'],#['hinge','squared_hinge','log','modified_huber','perceptron'], # squared_hinge same as linear svc
+        'estimator__sgd__penalty': ['elasticnet'], #['l2','l1','elasticnet']# l2 is same as linear svc
+        'estimator__sgd__n_iter': [15], # [15, 20, 25, 30]
+        'estimator__sgd__alpha': [10, 1, .01, 0.00001], #[10, 1, .01, 0.00001]
+        'estimator__sgd__l1_ratio': [0.01, 0.15, 0.3, 0.5], # use with elasticnet
+        #'estimator__sgd__learning_rate': ['constant', 'optimal', 'invscaling'],
         #'estimator__sgd__eta0': [0.0, 0.01, .10, 0.3], # used when learning rate is constant or invscaling
         #'estimator__sgd__power_t': [0.01, 0.2, 0.5, 0.75], # exponent used in invscaling
         #"estimator__rbm__batch_size": [5,10], #[5,10]
