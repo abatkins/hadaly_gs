@@ -54,33 +54,37 @@ def main(args):
     cv_type = args.cv
     dump = args.dump
 
-    n_gram = (1, 2)
+     # Set output dir and logging
     log_filename = 'gridsearch.log'
-
     job_dir = create_jobdir(prod, jobname)
     log_path = path.join(job_dir, log_filename)
+    logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s')
+
+     # set pickle dump
     if dump:
         pickle_path = path.join(job_dir, 'pickles')
         label_path = path.join(pickle_path, 'labels.pkl')
     else:
         pickle_path = None
         label_path = None
-    logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(message)s')
 
+    # Get training data
     df_whole_data = pd.read_csv(train_file, sep=',', quotechar='"', encoding='utf-8')
     text = df_whole_data['text']
 
+    # Preprocessing for y
     variables_object = VariablesXandY(input_filename=df_whole_data)
     y_train = variables_object.get_y_matrix(labels_pickle_filename=label_path).todense()
     #x_train = variables_object.get_x(text, n_gram)
 
 
-    #### This appears to be the correct way to combine these. Try this implementation.
     # Perform an IDF normalization on the output of HashingVectorizer
+    n_gram = (1, 2)
     hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
 
+    # Configure Model
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
     #sgd = SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0, fit_intercept=True)
@@ -89,7 +93,6 @@ def main(args):
         #('rbm', rbm),
         ('svc', svc)
     ])
-
     model_to_set = OneVsRestClassifier(pipe, n_jobs=1)
 
     # k folds, p paramaters, n options
@@ -107,7 +110,6 @@ def main(args):
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         "estimator__svc__C": [1000, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
     }
-    f1_scorer = make_scorer(f1_score, average='samples')
 
     # Handle CV method
     if cv_type == "shufflesplit":
@@ -117,6 +119,7 @@ def main(args):
     else:
         custom_cv = 5
         custom_inner_cv = 3
+    f1_scorer = make_scorer(f1_score, average='samples')
 
     # Handle Gridsearch (Nested, Normal, None)
     if gridsearch == "nested":
@@ -139,17 +142,20 @@ def main(args):
     else: # normal gridsearch
         model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv)
 
+    # Fitting Model
     if master:
         logging.info("Fitting model...")
         logging.info(vect)
         logging.info(model_tunning)
     model_tunning.fit(x_train, y_train)
 
+    # Dump model output to pickle
     if dump:
         logging.info("Dumping model...")
         model_path = path.join(pickle_path, 'model.pkl')
         joblib.dump(model_tunning, model_path)
 
+    # Output CV scores
     if master:
         if gridsearch == "nested":
             for i, scores in enumerate(model_tunning.grid_scores_):
