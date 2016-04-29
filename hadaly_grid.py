@@ -90,7 +90,7 @@ def main(args):
     # Configure Model
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     #svc = LinearSVC(class_weight="balanced")
-    sgd = SGDClassifier(n_jobs=1, random_state=0)
+    sgd = SGDClassifier(n_jobs=1, random_state=0, class_weight="balanced")
     pipe = Pipeline(steps=[
         #('rbm', rbm),
         ('sgd', sgd)
