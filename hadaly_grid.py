@@ -78,7 +78,7 @@ def main(args):
     #x_train = variables_object.get_x(text, n_gram)
 
     # Perform an IDF normalization on the output of HashingVectorizer
-    n_gram = (1, 3)
+    n_gram = (1, 1)
     hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
@@ -86,7 +86,7 @@ def main(args):
     # Configure Model
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
-    #sgd = SGDClassifier(n_iter=15, warm_start=True, n_jobs=-1, random_state=0, fit_intercept=True)
+    #sgd = SGDClassifier(n_jobs=-1, random_state=0,  class_weight="balanced")
     pipe = Pipeline(steps=[
         #('rbm', rbm),
         #('sgd', sgd)
