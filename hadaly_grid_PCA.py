@@ -79,10 +79,6 @@ def main(args):
     #x_train_tfidf = tfidf_transformer_object.fit_transform(x_train_counts)
 
     # PCA
-    n_features = x_train.shape[1]
-    #n_components_80 = int(n_features * .80)
-    n_components_90 = int(n_features*.90)
-
     pca = TruncatedSVD()
 
     #rbm = BernoulliRBM(random_state=0, verbose=True)
@@ -101,7 +97,7 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__pca__n_components': [n_components_90],
+        'estimator__pca__n_components': [2,3,4,5],
         #'estimator__sgd__loss': 'hinge',
         #'estimator__sgd__penalty': 'l2',
         #'estimator__sgd__n_iter': 50,
@@ -111,7 +107,7 @@ def main(args):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__C": [1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__C": [1000] #, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
     }
     f1_scorer = make_scorer(f1_score, average='samples')
 

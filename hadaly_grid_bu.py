@@ -52,6 +52,7 @@ def main(args):
     prod = args.prod
     nested = args.nested
     jobname = args.jobname
+    single = args.singular
 
     n_gram = (1, 2)
     log_filename = 'gridsearch.log'
@@ -80,10 +81,8 @@ def main(args):
 
     # PCA
     n_features = x_train.shape[1]
-    #n_components_80 = int(n_features * .80)
-    n_components_90 = int(n_features*.90)
-
-    pca = TruncatedSVD()
+    n_components = int(n_features*.90)
+    pca = TruncatedSVD(n_components)
 
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")
@@ -101,7 +100,7 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__pca__n_components': [n_components_90],
+        'estimator__pca__n_components': [2,100],
         #'estimator__sgd__loss': 'hinge',
         #'estimator__sgd__penalty': 'l2',
         #'estimator__sgd__n_iter': 50,
@@ -111,8 +110,9 @@ def main(args):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__C": [1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__C": [1000] #, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
     }
+
     f1_scorer = make_scorer(f1_score, average='samples')
 
     #custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.20, random_state=0) # iters should be higher
@@ -128,8 +128,17 @@ def main(args):
                                            inner_cv=custom_inner_cv,
                                            multi_output=True
         )
+    elif single:
+        train_set, test_set = ShuffleSplit(len(y_train), n_iter=1, test_size=0.20, random_state=0)[0]
+        x_test = x_train.loc[test_set].reset_index(drop=True)
+        y_test = y_train.loc[test_set].reset_index(drop=True)
+        x_train = x_train.loc[train_set].reset_index(drop=True)
+        y_train = y_train.loc[train_set].reset_index(drop=True)
+
+        model_tunning = model_to_set
     else:
         model_tunning = GridSearchCV(model_to_set, param_grid=parameters, scoring=f1_scorer, cv=custom_cv)
+
 
     if master:
         logging.info("Fitting model...")
@@ -147,13 +156,17 @@ def main(args):
                 csv_file = path.join(job_dir,'grid-scores-%d.csv' % (i + 1))
                 scores.to_csv(csv_file, index=False)
 
-        #print(model_tunning.best_score_)
-        print(model_tunning.best_params_)
+            #print(model_tunning.best_score_)
+            print(model_tunning.best_params_)
 
-        #logging.info("best score: " + str(model_tunning.best_score_))
-        logging.info('cv used:' + str(custom_cv))
-        logging.info("best params: " + str(model_tunning.best_params_))
-        #logging.info("best estimator: " + str(model_tunning.best_estimator_))
+            #logging.info("best score: " + str(model_tunning.best_score_))
+            logging.info('cv used:' + str(custom_cv))
+            logging.info("best params: " + str(model_tunning.best_params_))
+            #logging.info("best estimator: " + str(model_tunning.best_estimator_))
+        elif single:
+            y_pred = model_tunning.predict(x_test)
+            score = f1_score(y_test, y_pred)
+            logging.info("f1_score: %s" % str(score))
 
         logging.info("Done!")
 
@@ -162,6 +175,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run Hadaly GridsearchCV")
     parser.add_argument("--nested", help="use nested gridsearch", action="store_true")
     parser.add_argument("--prod", help="set environment to production", action="store_true")
+    parser.add_argument("--singular", help="Run single model", action="store_true")
     parser.add_argument("-f", "--filename", help="filename", type=str, default="test.csv")
     parser.add_argument("-j", "--jobname", help="jobname (specifies output directory)", type=str, default="your_job")
     args = parser.parse_args()
