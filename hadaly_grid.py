@@ -78,7 +78,7 @@ def main(args):
     #x_train = variables_object.get_x(text, n_gram)
 
     # Perform an IDF normalization on the output of HashingVectorizer
-    n_gram = (1, 3)
+    n_gram = (1, 2)
     hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
@@ -107,7 +107,9 @@ def main(args):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__C": [1, 1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__loss": ['hinge'], # ['hinge', 'squared_hinge']
+        "estimator__svc__max_iter": [10, 100, 1000, 10000],
+        "estimator__svc__C": [.01, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
     }
 
     # Handle CV method
