@@ -85,7 +85,7 @@ def main(args):
 
     # Configure Model
     #rbm = BernoulliRBM(random_state=0, verbose=True)
-    svc = LinearSVC(class_weight="balanced")
+    svc = LinearSVC(class_weight="balanced")#,random_state=0)
     #sgd = SGDClassifier(n_jobs=-1, random_state=0,  class_weight="balanced")
     pipe = Pipeline(steps=[
         #('rbm', rbm),
@@ -107,9 +107,9 @@ def main(args):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
-        "estimator__svc__max_iter": [10, 100, 1000, 10000],
-        "estimator__svc__C": [.01, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__loss": ['hinge'], # ['hinge', 'squared_hinge']
+        "estimator__svc__max_iter": [1000],
+        "estimator__svc__C": [.5, 1, 2, 4] #[.01, 1, 10, 100, 1000, 10000]
     }
 
     # Handle CV method
