@@ -1,5 +1,5 @@
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer, CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
@@ -79,7 +79,7 @@ def main(args):
 
     # Perform an IDF normalization on the output of HashingVectorizer
     n_gram = (1, 2)
-    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hash = CountVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
 
@@ -108,9 +108,9 @@ def main(args):
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         "estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
-        'estimator__svc__penalty': ['l1','l2'],
+        'estimator__svc__penalty': ['l2'], #['l1','l2']
         "estimator__svc__max_iter": [1000],
-        "estimator__svc__C": [.5, 1, 2, 4] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
     }
 
     # Handle CV method
