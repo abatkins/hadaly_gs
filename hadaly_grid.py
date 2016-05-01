@@ -108,7 +108,7 @@ def main(args):
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         "estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
-        'estimator__svc__penalty': ['l2'], #['l1','l2']
+        'estimator__svc__penalty': ['l2'],
         "estimator__svc__max_iter": [1000],
         "estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
     }
