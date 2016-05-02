@@ -116,8 +116,8 @@ def main(args):
     f1_scorer = make_scorer(f1_score, average='samples')
 
     #custom_cv = ShuffleSplit(len(y_train), n_iter=5, test_size=0.20, random_state=0) # iters should be higher
-    custom_cv = 5
-    custom_inner_cv = 3
+    custom_cv = 2
+    custom_inner_cv = 2
     #custom_inner_cv=lambda _x, _y: ShuffleSplit(int(len(y_train)*.99), n_iter=3, test_size=0.01, random_state=1)
 
     if nested:
