@@ -4,7 +4,9 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
+from sklearn.naive_bayes import MultinomialNB
 from MPINestedGridSearchCV import NestedGridSearchCV
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score
@@ -88,13 +90,15 @@ def main(args):
     #rbm = BernoulliRBM(random_state=0, verbose=True)
     svc = LinearSVC(class_weight="balanced")#,random_state=0)
     #sgd = SGDClassifier(n_jobs=-1, random_state=0,  class_weight="balanced")
+    log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='sag')
     pipe = Pipeline(steps=[
         #('rbm', rbm),
         #('sgd', sgd)
-        ('svc', svc)
+        #('svc', svc)
+        ('log', log)
     ])
     model_to_set = OneVsRestClassifier(pipe, n_jobs=1)
-
+    #model_to_set = MultinomialNB()
     # k folds, p paramaters, n options
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
@@ -108,10 +112,11 @@ def main(args):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        "estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
-        'estimator__svc__penalty': ['l2'],
-        "estimator__svc__max_iter": [1000],
-        "estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
+        #"estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
+        #'estimator__svc__penalty': ['l2'],
+        #"estimator__svc__max_iter": [1000],
+        #"estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__log__C": [.1,1,10,1000]
     }
 
     # Handle CV method
