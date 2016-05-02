@@ -176,6 +176,9 @@ def main(args):
             print(model_tunning.best_params_)
             logging.info('cv used:' + str(custom_cv))
             logging.info("best params: " + str(model_tunning.best_params_))
+            logging.info("best estimator: " + str(model_tunning.best_estimator_))
+            logging.info('best score:' + str(model_tunning.best_score_))
+            logging.info("grid scores: " + str(model_tunning.grid_scores_))
 
         logging.info("Done!")
 
