@@ -79,7 +79,7 @@ def main(args):
 
     # Perform an IDF normalization on the output of HashingVectorizer
     n_gram = (1, 2)
-    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", n_features=2**21)#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     #hash = CountVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
@@ -111,7 +111,7 @@ def main(args):
         "estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
         'estimator__svc__penalty': ['l2'],
         "estimator__svc__max_iter": [1000],
-        "estimator__svc__C": [1000] #[.01, 1, 10, 100, 1000, 10000]
+        "estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
     }
 
     # Handle CV method
@@ -120,8 +120,8 @@ def main(args):
         new_size = int(len(y_train) * (1 - custom_cv.test_size))
         custom_inner_cv = lambda _x, _y: ShuffleSplit(new_size, n_iter=3, test_size=0.10, random_state=1)
     else:
-        custom_cv = 5
-        custom_inner_cv = 3
+        custom_cv = 2
+        custom_inner_cv = 2
     f1_scorer = make_scorer(f1_score, average='samples')
 
     # Handle Gridsearch (Nested, Normal, None)
@@ -168,14 +168,19 @@ def main(args):
             print(model_tunning.best_params_)
             logging.info('cv used:' + str(custom_cv))
             logging.info("best params: " + str(model_tunning.best_params_))
+
         elif gridsearch == "none":
             y_pred = model_tunning.predict(x_test)
             score = f1_score(y_test, y_pred, average='samples')
             logging.info("f1_score: %s" % str(score))
+
         else: # normal gridsearch
             print(model_tunning.best_params_)
             logging.info('cv used:' + str(custom_cv))
             logging.info("best params: " + str(model_tunning.best_params_))
+            logging.info("best estimator: " + str(model_tunning.best_estimator_))
+            logging.info('best score:' + str(model_tunning.best_score_))
+            logging.info("grid scores: " + str(model_tunning.grid_scores_))
 
         logging.info("Done!")
 
