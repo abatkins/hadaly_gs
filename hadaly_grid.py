@@ -79,7 +79,7 @@ def main(args):
 
     # Perform an IDF normalization on the output of HashingVectorizer
     n_gram = (1, 2)
-    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", n_features=2**21)#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     #hash = CountVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
@@ -168,10 +168,12 @@ def main(args):
             print(model_tunning.best_params_)
             logging.info('cv used:' + str(custom_cv))
             logging.info("best params: " + str(model_tunning.best_params_))
+
         elif gridsearch == "none":
             y_pred = model_tunning.predict(x_test)
             score = f1_score(y_test, y_pred, average='samples')
             logging.info("f1_score: %s" % str(score))
+
         else: # normal gridsearch
             print(model_tunning.best_params_)
             logging.info('cv used:' + str(custom_cv))
