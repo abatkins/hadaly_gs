@@ -89,7 +89,7 @@ def main(args):
     #n_features = x_train.shape[1]
     # n_components_80 = int(n_features * .80)
     #n_components_90 = int(n_features * .90)
-    n_components_90 = 2
+    #n_components_90 = 2
 
     pca = TruncatedSVD()
     # Configure Model
@@ -108,7 +108,6 @@ def main(args):
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        'estimator__pca__n_components': [n_components_90],
         #'estimator__sgd__loss': 'hinge',
         #'estimator__sgd__penalty': 'l2',
         #'estimator__sgd__n_iter': 50,
@@ -118,7 +117,7 @@ def main(args):
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        'estimator__pca__n_components': [n_components_90],
+        'estimator__pca__n_components': [100,200],
         "estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
         'estimator__svc__penalty': ['l2'],
         "estimator__svc__max_iter": [1000],
