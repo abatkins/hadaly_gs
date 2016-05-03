@@ -87,7 +87,7 @@ def main(args):
     svc = LinearSVC(class_weight="balanced")#,random_state=0)
     #sgd = SGDClassifier(n_jobs=-1, random_state=0,  class_weight="balanced")
     #log = LogisticRegression(class_weight="balanced", multi_class="multinomial", solver='lbfgs', dual=False, max_iter=1000, random_state=0)
-    log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='liblinear', dual=True, max_iter=1000, random_state=0) # can only use l2 norm
+    #log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='liblinear', dual=True, max_iter=1000, random_state=0) # can only use l2 norm
     log = LogisticRegression(class_weight="balanced", multi_class="ovr", dual=False, max_iter=1000, random_state=0)
     pipe = Pipeline(steps=[
         #('rbm', rbm),
