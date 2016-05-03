@@ -79,32 +79,33 @@ def main(args):
 
     # Perform an IDF normalization on the output of HashingVectorizer
     n_gram = (1, 2)
-    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, non_negative=True, norm=None)#, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
+    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode")#, norm=None, token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b") # tokens are character strings of 2 or more characters
     vect = make_pipeline(hash, TfidfTransformer())
     x_train = vect.fit_transform(text)
 
     # Configure Model
     svc = LinearSVC(class_weight="balanced")#,random_state=0)
-    #sgd = SGDClassifier(n_jobs=-1, random_state=0,  class_weight="balanced")
-    #log = LogisticRegression(class_weight="balanced", multi_class="multinomial", solver='lbfgs', dual=False, max_iter=1000, random_state=0)
+    sgd = SGDClassifier(n_jobs=1, random_state=0,  class_weight="balanced")
+    #log = LogisticRegression(class_weight="balanced", multi_class="multinomial", solver='newton-cg', dual=False, max_iter=1000, random_state=0)
     #log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='liblinear', dual=True, max_iter=1000, random_state=0) # can only use l2 norm
-    log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='liblinear', penalty='l1', dual=False, max_iter=1000, random_state=0) # can only use l2 norm
+    #log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='liblinear', penalty='l1', dual=False, max_iter=1000, random_state=0) # can only use l2 norm
     #log = LogisticRegression(class_weight="balanced", multi_class="ovr", dual=False, max_iter=1000, random_state=0)
     pipe = Pipeline(steps=[
         #('rbm', rbm),
-        #('sgd', sgd)
+        ('sgd', sgd)
         #('svc', svc)
-        ('log', log)
+        #('log', log)
     ])
     model_to_set = OneVsRestClassifier(pipe, n_jobs=1)
     # k folds, p paramaters, n options
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
-        #'estimator__sgd__loss': 'hinge',
-        #'estimator__sgd__penalty': 'l2',
-        #'estimator__sgd__n_iter': 50,
-        #'estimator__sgd__alpha': 0.00001,
+        'estimator__sgd__loss': ['log', 'modified_huber'], #['hinge', 'squared_hinge', 'log','perceptron', 'modified_huber']
+        'estimator__sgd__penalty': ['l2'], # ['l2', 'l1', 'elasticnet'],
+        'estimator__sgd__n_iter': [50],
+        'estimator__sgd__alpha': [.00001, .1, 1, 10, 1000],
+        'estimator__sgd__average': [True]
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
@@ -115,8 +116,10 @@ def main(args):
         #"estimator__svc__max_iter": [1000],
         #"estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
         #"estimator__log__C": [.1,1,10,1000],
-        "estimator__log__C": [.1, 1, 10, 1000],
-        #"estimator__log__solver": ['liblinear', 'sag', 'newton-cg']    }
+        #"estimator__log__C": [.1, 1, 10, 1000]
+        #"estimator__log__solver": ['liblinear', 'sag', 'newton-cg','lbfgs'] # for ovr
+        # "estimator__log__solver": ['lbfgs', 'newton-cg'] # for multinomial
+    }
 
     # Handle CV method
     if cv_type == "shufflesplit":
