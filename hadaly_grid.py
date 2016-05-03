@@ -112,8 +112,8 @@ def main(args):
         #"estimator__svc__max_iter": [1000],
         #"estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
         #"estimator__log__C": [.1,1,10,1000],
-        "log__C": [.1, 1, 10, 1000],
-        "log__solver": ['newton-cg', 'lbfgs'] # must set multi_class="multinomial"
+        "estimator__log__C": [.1, 1, 10, 1000],
+        "estimator__log__penatly": ['l1', 'l2']
     }
 
     # Handle CV method
