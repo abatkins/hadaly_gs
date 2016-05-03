@@ -102,10 +102,10 @@ def main(args):
     # Ex: 3*2^4 = 48 for this case
     parameters = {
         'estimator__sgd__loss': ['log', 'modified_huber'], #['hinge', 'squared_hinge', 'log','perceptron', 'modified_huber']
-        'estimator__sgd__penalty': ['l2'], # ['l2', 'l1', 'elasticnet'],
+        'estimator__sgd__penalty': ['elasticnet'], # ['l2', 'l1', 'elasticnet'],
         'estimator__sgd__n_iter': [50],
         'estimator__sgd__alpha': [.00001, .1, 1, 10, 1000],
-        'estimator__sgd__average': [False]
+        'estimator__sgd__average': [False],
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
