@@ -86,7 +86,8 @@ def main(args):
     # Configure Model
     svc = LinearSVC(class_weight="balanced")#,random_state=0)
     #sgd = SGDClassifier(n_jobs=-1, random_state=0,  class_weight="balanced")
-    log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='sag', dual=False, random_state=0)
+    #log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='sag', dual=False, max_iter=1000, random_state=0)
+    log = LogisticRegression(class_weight="balanced", multi_class="ovr", dual=True, max_iter=1000, random_state=0)
     pipe = Pipeline(steps=[
         #('rbm', rbm),
         #('sgd', sgd)
@@ -113,7 +114,7 @@ def main(args):
         #"estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
         #"estimator__log__C": [.1,1,10,1000],
         "estimator__log__C": [.1, 1, 10, 1000]#,
-        #"estimator__log__penatly": ['l1', 'l2']
+        #"estimator__log__penalty": ['l1', 'l2']
     }
 
     # Handle CV method
