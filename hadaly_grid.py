@@ -1,9 +1,9 @@
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.feature_extraction.text import HashingVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.neural_network import BernoulliRBM
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
 from MPINestedGridSearchCV import NestedGridSearchCV
 from sklearn.grid_search import GridSearchCV
@@ -77,11 +77,9 @@ def main(args):
     y_train = variables_object.get_y_matrix(labels_pickle_filename=label_path).todense()
     #x_train = variables_object.get_x(text, n_gram)
 
-
     # Perform an IDF normalization on the output of HashingVectorizer
     n_gram = (1, 2)
-    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode",
-                             non_negative=True, norm=None,
+    hash = HashingVectorizer(ngram_range=n_gram, stop_words='english', strip_accents="unicode", norm=None,
                              token_pattern=r"(?u)\b[a-zA-Z_][a-zA-Z_]+\b" # tokens are character strings of 2 or more characters
     )
     vect = make_pipeline(hash, TfidfTransformer())
@@ -89,33 +87,52 @@ def main(args):
 
     # Configure Model
     #rbm = BernoulliRBM(random_state=0, verbose=True)
-    #svc = LinearSVC(class_weight="balanced")
-    sgd = SGDClassifier(n_jobs=1, random_state=0, class_weight="balanced")
+    svc = LinearSVC(class_weight="balanced", random_state=0)
+    sgd = SGDClassifier(n_jobs=1, random_state=0,  class_weight="balanced")
+    #log = LogisticRegression(class_weight="balanced", multi_class="multinomial", solver='newton-cg', dual=False, max_iter=1000, random_state=0)
+    #log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='liblinear', dual=True, max_iter=1000, random_state=0) # can only use l2 norm
+    #log = LogisticRegression(class_weight="balanced", multi_class="ovr", solver='liblinear', penalty='l1', dual=False, max_iter=1000, random_state=0) # can only use l2 norm
+    #log = LogisticRegression(class_weight="balanced", multi_class="ovr", dual=False, max_iter=1000, random_state=0)
     pipe = Pipeline(steps=[
         #('rbm', rbm),
         ('sgd', sgd)
         #('svc', svc)
+        #('log', log)
     ])
     model_to_set = OneVsRestClassifier(pipe, n_jobs=1)
-
     # k folds, p paramaters, n options
     # number of model fits is equal to k*n^p
     # Ex: 3*2^4 = 48 for this case
     parameters = {
+        #### SGD PARAMS #######
         'estimator__sgd__loss': ['hinge'],#['hinge','squared_hinge','log','modified_huber','perceptron'], # squared_hinge same as linear svc
         'estimator__sgd__penalty': ['elasticnet'], #['l2','l1','elasticnet']# l2 is same as linear svc
         'estimator__sgd__n_iter': [15], # [15, 20, 25, 30]
         'estimator__sgd__alpha': [10, 1, .01, 0.00001], #[10, 1, .01, 0.00001]
         'estimator__sgd__l1_ratio': [0.01, 0.15, 0.3, 0.5], # use with elasticnet
+        'estimator__sgd__average': [False]
         #'estimator__sgd__learning_rate': ['constant', 'optimal', 'invscaling'],
         #'estimator__sgd__eta0': [0.0, 0.01, .10, 0.3], # used when learning rate is constant or invscaling
         #'estimator__sgd__power_t': [0.01, 0.2, 0.5, 0.75], # exponent used in invscaling
+
+        #### RBM PARAMS ######
         #"estimator__rbm__batch_size": [5,10], #[5,10]
         #"estimator__rbm__learning_rate": [.06,.1],#[.001, .01, .06, .1],
         #"estimator__rbm__n_iter": [2,5],#[1,2,4,8,10],
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
         #"estimator__rbm__n_components": [3,5], #[1,5,10,20,100,256]
-        #"estimator__svc__C": [1000, 10, 1, .01] #[.01, 1, 10, 100, 1000, 10000]
+
+        #### SVC PARAMS ######
+        #"estimator__svc__loss": ['squared_hinge'], # ['hinge', 'squared_hinge']
+        #'estimator__svc__penalty': ['l2'],
+        #"estimator__svc__max_iter": [1000],
+        #"estimator__svc__C": [.1, 1, 10, 1000] #[.01, 1, 10, 100, 1000, 10000]
+
+        ##### LOG PARAMS #######
+        #"estimator__log__C": [.1,1,10,1000],
+        #"estimator__log__C": [.1, 1, 10, 1000]
+        #"estimator__log__solver": ['liblinear', 'sag', 'newton-cg','lbfgs'] # for ovr
+        #"estimator__log__solver": ['lbfgs', 'newton-cg'] # for multinomial
     }
 
     # Handle CV method
@@ -172,14 +189,19 @@ def main(args):
             print(model_tunning.best_params_)
             logging.info('cv used:' + str(custom_cv))
             logging.info("best params: " + str(model_tunning.best_params_))
+
         elif gridsearch == "none":
             y_pred = model_tunning.predict(x_test)
             score = f1_score(y_test, y_pred, average='samples')
             logging.info("f1_score: %s" % str(score))
+
         else: # normal gridsearch
             print(model_tunning.best_params_)
             logging.info('cv used:' + str(custom_cv))
             logging.info("best params: " + str(model_tunning.best_params_))
+            logging.info("best estimator: " + str(model_tunning.best_estimator_))
+            logging.info('best score:' + str(model_tunning.best_score_))
+            logging.info("grid scores: " + str(model_tunning.grid_scores_))
 
         logging.info("Done!")
 
