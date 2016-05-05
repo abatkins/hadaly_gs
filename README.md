@@ -36,6 +36,8 @@ module load mpi4py/1.3.1/gcc
 
 ## Run MPI
 
+python hadaly_grid.py --help
+
 ## vortex
 <pre>
 qsub -l walltime=30:00:00 -l nodes=1:c18b:ppn=12 runscript_opt
