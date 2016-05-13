@@ -10,7 +10,6 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import f1_score
 from sklearn.metrics import make_scorer
 from sklearn.pipeline import make_pipeline
-from get_variables import VariablesXandY
 from sklearn.cross_validation import ShuffleSplit
 import logging
 from sklearn.externals import joblib
@@ -18,6 +17,8 @@ from os import path, remove, listdir, makedirs
 from mpi4py import MPI
 import pandas as pd
 import argparse
+import numpy as np
+from sklearn import preprocessing
 
 rank = MPI.COMM_WORLD.Get_rank()
 master = bool(rank == 0)
@@ -46,6 +47,27 @@ def create_jobdir(prod, jobname):
 
     return job_dir
 
+
+def get_y(df_whole_data, labels_pickle_filename=None):
+    codes_train = df_whole_data.ix[:, 'act_code1':'act_code33']
+
+    y_train = []
+    for index, row in codes_train.iterrows():
+        row = row[np.logical_not(np.isnan(row))].astype(str)
+        row = tuple(row.tolist())
+        y_train.append(row)
+
+    tuple_unique_labels = tuple(set(x for l in y_train for x in l))
+    label_binarizer_object = preprocessing.MultiLabelBinarizer(classes=tuple_unique_labels, sparse_output=True)
+    y_train_binarized = label_binarizer_object.fit_transform(y_train)
+
+    fitted_labels = label_binarizer_object.fit(y_train)
+
+    if labels_pickle_filename:
+        joblib.dump(fitted_labels, labels_pickle_filename)
+
+    return y_train_binarized
+
 def main(args):
     train_file = args.filename
     prod = args.prod
@@ -73,8 +95,7 @@ def main(args):
     text = df_whole_data['text']
 
     # Preprocessing for y
-    variables_object = VariablesXandY(input_filename=df_whole_data)
-    y_train = variables_object.get_y_matrix(labels_pickle_filename=label_path).todense()
+    y_train = get_y(df_whole_data, labels_filename=label_path).todense()
     #x_train = variables_object.get_x(text, n_gram)
 
     # Perform an IDF normalization on the output of HashingVectorizer
